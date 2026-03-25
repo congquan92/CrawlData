@@ -3,12 +3,12 @@ import queue
 from datetime import datetime, timedelta
 import pandas as pd
 from core.worker import CrawlWorker
+from core.config import AppConfig
 
 class ThreadManager:
     """Class quản lý việc chia job và chạy các luồng"""
     
     def __init__(self, ui_controller):
-        self.MAX_THREADS = 5
         self.ui_controller = ui_controller
         self.log_queue = queue.Queue()
         self.progress_queue = queue.Queue()
@@ -45,15 +45,16 @@ class ThreadManager:
         self.ui_controller.set_total_tasks(total_days)
         self.log_queue.put(f"Tổng số ngày trong Queue: {total_days}")
         
-        # Tối ưu: Nếu ít ngày thì chỉ cần dùng bấy nhiêu luồng, tối đa là MAX_THREADS
-        actual_threads = min(self.MAX_THREADS, total_days)
+        # Tối ưu: Nếu ít ngày thì chỉ cần dùng bấy nhiêu luồng, tối đa là MAX_THREADS (từ config)
+        current_max_threads = AppConfig.MAX_THREADS
+        actual_threads = min(current_max_threads, total_days)
         chunks = self.chunk_list(dates, actual_threads)
         
         all_dfs = []
         worker = CrawlWorker(self.log_queue, self.progress_queue)
         
         # Khởi chạy Thread Pool
-        with concurrent.futures.ThreadPoolExecutor(max_workers=self.MAX_THREADS) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=current_max_threads) as executor:
             future_to_chunk = {
                 executor.submit(worker.process_dates, f"Thread-{i+1}", base_url, chunk): chunk
                 for i, chunk in enumerate(chunks)
