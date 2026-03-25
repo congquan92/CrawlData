@@ -18,10 +18,12 @@ class CrawlProcessor:
 
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Tìm bảng dữ liệu trong cấu trúc trang
-        table = soup.find('table')
-        if not table:
+        # Tìm bảng dữ liệu trong cấu trúc trang (chỉ lấy bảng 1, bỏ qua bảng 2: Lịch sử thay đổi giá)
+        tables = soup.find_all('table')
+        if not tables:
             return {"status": "empty", "message": f"Không tìm thấy bảng dữ liệu tại {url}"}
+            
+        table = tables[0]
             
         rows = table.find_all('tr')
         # Tối thiểu 1 dòng header, 1 dòng kết, 1 dòng data. Nếu <=2 coi như bảng trống
