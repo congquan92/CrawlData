@@ -3,6 +3,7 @@ import threading
 from tkinter import ttk
 from core.config import AppConfig
 from core.live_processor import LiveProcessor
+from core.processor import CrawlProcessor
 
 class LiveTab(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -98,6 +99,26 @@ class LiveTab(ctk.CTkFrame):
 
     def _fetch_live_thread(self, url):
         result = LiveProcessor.get_full_live_data(url)
+        
+        if result["status"] in ("empty", "error"):
+            raw = CrawlProcessor.parse_html(url)
+            if raw["status"] == "success":
+                df = raw["data"]
+                data = []
+                update_time = df.iloc[0]["thoi_gian_cap_nhat"] if (not df.empty and "thoi_gian_cap_nhat" in df.columns) else "Trích xuất lịch sử"
+                
+                for _, row in df.iterrows():
+                    data.append({
+                        "khu_vuc": row.get("khu_vuc", ""),
+                        "he_thong": row.get("loai_vang", ""),
+                        "mua_vao": row.get("mua_vao", ""),
+                        "ban_ra": row.get("ban_ra", "")
+                    })
+                result = {"status": "success", "update_time": update_time, "prices": data}
+            elif raw["status"] != "empty":
+                # Nếu LiveProcessor rỗng nhưng CrawlProcessor lỗi thực sự thì lấy lỗi của Crawl
+                result = raw
+                
         self.after(0, self._update_live_ui, result)
 
     def _update_live_ui(self, result):
@@ -136,6 +157,12 @@ class LiveTab(ctk.CTkFrame):
 
     def _export_live_thread(self, url, csv_name):
         result = LiveProcessor.get_details_table(url)
+        
+        if result["status"] in ("empty", "error"):
+            raw = CrawlProcessor.parse_html(url)
+            if raw["status"] == "success":
+                result = raw
+        
         if result["status"] == "success":
             try:
                 result["data"].to_csv(csv_name, index=False, encoding="utf-8-sig")

@@ -24,8 +24,8 @@ class ScraperApp(ctk.CTk):
         self.tabview = ctk.CTkTabview(self, fg_color="transparent")
         self.tabview.pack(padx=10, pady=10, fill="both", expand=True)
     
-        self.tab_live_frame = self.tabview.add("🔥 Trực Tiếp (Live)")
-        self.tab_history_frame = self.tabview.add("📊 Lịch Sử Crawl")
+        self.tab_live_frame = self.tabview.add("🔥 Crawl data")
+        self.tab_history_frame = self.tabview.add("📊 Crawl nâng cao")
         self.tab_config_frame = self.tabview.add("⚙️ Cài Đặt")
 
         # Khởi tạo các class tương ứng đổ vào từng Frame trên TabView
