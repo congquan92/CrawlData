@@ -13,7 +13,7 @@ class ScraperApp(ctk.CTk):
         super().__init__()
 
         # --- CẤU HÌNH CỬA SỔ ---
-        self.title("GiaVang.org Scraper Tool - By Kinetic Architect")
+        self.title("Tool Crawl Dữ Liệu Giá Vàng")
         self.geometry("900x640")
         self.minsize(900, 640)
         

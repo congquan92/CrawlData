@@ -62,6 +62,11 @@ class HistoryTab(ctk.CTkFrame):
                                        corner_radius=8, command=self.start_crawling)
         self.btn_start.pack(padx=20, fill="x")
 
+        self.btn_stop = ctk.CTkButton(self.frame_input, text="⏹ DỪNG LẠI", font=("Inter", 13, "bold"), 
+                                       height=50, fg_color="#e74c3c", hover_color="#c0392b", text_color="#ffffff", 
+                                       corner_radius=8, command=self.stop_crawling, state="disabled")
+        self.btn_stop.pack(padx=20, pady=(10, 0), fill="x")
+
         # KHU VỰC KẾT QUẢ
         self.frame_output = ctk.CTkFrame(self, fg_color="transparent")
         self.frame_output.grid(row=0, column=1, padx=(10, 5), pady=10, sticky="nsew")
@@ -147,6 +152,7 @@ class HistoryTab(ctk.CTkFrame):
         self.textbox_log.configure(state="disabled")
         
         self.btn_start.configure(state="disabled", text="[Đang xử lý...]", fg_color="#3d4a3e")
+        self.btn_stop.configure(state="normal", text="⏹ DỪNG LẠI")
         self.is_running = True
         self.write_log(f"Hệ thống đang chạy với tối đa {AppConfig.MAX_THREADS} luồng...")
         
@@ -160,6 +166,11 @@ class HistoryTab(ctk.CTkFrame):
         
         self.after(100, self.process_queues)
 
+    def stop_crawling(self):
+        if self.is_running and hasattr(self, 'manager'):
+            self.manager.stop()
+            self.btn_stop.configure(state="disabled", text="[Đang dừng...]")
+
     def finish_crawling(self):
         self.after(300, self._finalize_ui)
         
@@ -169,4 +180,6 @@ class HistoryTab(ctk.CTkFrame):
         
         self.is_running = False
         self.btn_start.configure(state="normal", text="▶ BẮT ĐẦU CRAWL", fg_color="#2ecc71")
+        if hasattr(self, 'btn_stop'):
+            self.btn_stop.configure(state="disabled", text="⏹ DỪNG LẠI")
         self.write_log("---------- TASK COMPLETE ----------")

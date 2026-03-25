@@ -1,4 +1,5 @@
 import concurrent.futures
+import threading
 import queue
 from datetime import datetime, timedelta
 import pandas as pd
@@ -12,6 +13,11 @@ class ThreadManager:
         self.ui_controller = ui_controller
         self.log_queue = queue.Queue()
         self.progress_queue = queue.Queue()
+        self.stop_event = threading.Event()
+        
+    def stop(self):
+        self.stop_event.set()
+        self.log_queue.put("Đang yêu cầu dừng tiến trình crawl...")
         
     def generate_date_range(self, start_date, end_date):
         dates = []
@@ -51,7 +57,7 @@ class ThreadManager:
         chunks = self.chunk_list(dates, actual_threads)
         
         all_dfs = []
-        worker = CrawlWorker(self.log_queue, self.progress_queue)
+        worker = CrawlWorker(self.log_queue, self.progress_queue, self.stop_event)
         
         # Khởi chạy Thread Pool
         with concurrent.futures.ThreadPoolExecutor(max_workers=current_max_threads) as executor:
@@ -73,7 +79,7 @@ class ThreadManager:
             final_df = pd.concat(all_dfs, ignore_index=True)
             try:
                 final_df.to_csv(output_csv, index=False, encoding='utf-8-sig')
-                self.log_queue.put(f"SUCCESS: Cứu dữ liệu thành công -> Xuất ra '{output_csv}' ({len(final_df)} dòng)")
+                self.log_queue.put(f"SUCCESS: Crawl dữ liệu thành công -> Xuất ra '{output_csv}' ({len(final_df)} dòng)")
             except Exception as e:
                 self.log_queue.put(f"LỖI I/O KHI GHI FILE: {e}")
         else:

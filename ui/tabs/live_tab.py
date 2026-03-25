@@ -44,7 +44,7 @@ class LiveTab(ctk.CTkFrame):
 
         ctk.CTkLabel(export_frame, text="TÊN FILE CSV", font=("Space Grotesk", 10, "bold"), text_color="#869486").pack(anchor="w")
         self.live_entry_csv = ctk.CTkEntry(export_frame, height=45, font=("Inter", 13), fg_color="#1b1b1c", border_color="#3d4a3e")
-        self.live_entry_csv.insert(0, "giavang_live.csv")
+        self.live_entry_csv.insert(0, "giavang_hientai.csv")
         self.live_entry_csv.pack(pady=(5, 10), fill="x")
 
         self.btn_export_live = ctk.CTkButton(export_frame, text="⬇ XUẤT CSV BẢNG", font=("Inter", 13, "bold"),
